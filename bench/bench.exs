@@ -1,7 +1,7 @@
 
 {:ok, ref} = SnowflakeIdx.init(1)
 
-[parallel: 1, print: [fast_warning: false]]
+[parallel: 2, print: [fast_warning: false]]
 |> Benchee.init()
 |> Benchee.system()
 |> Benchee.benchmark(

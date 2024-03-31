@@ -131,10 +131,6 @@ defmodule SnowflakeIdx do
     <<machine_id::size(40), machine_id_bits::size(8), timestamp_bits::size(8), seq_bits::size(8)>> =
       <<bits::size(64)>>
 
-    # machine_id = :atomics.get(ref, 2)
-    # machine_id_bits = :atomics.get(ref, 3)
-    # timestamp_bits = :atomics.get(ref, 4)
-    # seq_bits = :atomics.get(ref, 5)
     {machine_id, machine_id_bits, timestamp_bits, seq_bits}
   end
 
@@ -152,10 +148,6 @@ defmodule SnowflakeIdx do
         seq_bits::size(8)>>
 
     :atomics.put(ref, 2, bits)
-    # :atomics.put(ref, 2, machine_id)
-    # :atomics.put(ref, 3, machine_id_bits)
-    # :atomics.put(ref, 4, timestamp_bits)
-    # :atomics.put(ref, 5, seq_bits)
     :ok
   end
 end
