@@ -1,6 +1,8 @@
-# SnowflakeId
+# SnowflakeIdx
 
-SnowflakeId aims to provide atomicity even when called by multiple processes, while ensuring reasonably fast performance.
+[![Hex.pm Version](http://img.shields.io/hexpm/v/snowflake_idx.svg)](https://hex.pm/packages/snowflake_idx) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/snowflake_idx/)
+
+SnowflakeIdx aims to provide atomicity even when called by multiple processes, while ensuring reasonably fast performance.
 
 It is designed to be called without worrying about overload in performance-critical systems.
 
@@ -9,8 +11,8 @@ To achieve this, it utilizes erlang's atomics to ensure fast performance.
 By default, Snowflake ID is an unsigned 64-bit integer and has the following structure:
 
 ```elixir
-  # snowflake_id = | machine_id | timestamp | seq  |
-  # (64)         = | (10)       | (42)      | (12) |
+  # snowflake_idx = | machine_id | timestamp | seq  |
+  # (64)          = | (10)       | (42)      | (12) |
 ```
 
 
@@ -23,12 +25,12 @@ a Process.sleep(1) call is made to ensure atomicity. This can result in a degrad
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `snowflake_id` to your list of dependencies in `mix.exs`:
+by adding `snowflake_idx` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:snowflake_id, "~> 1.0.0"}
+    {:snowflake_idx, "~> 1.0"}
   ]
 end
 ```
@@ -39,13 +41,13 @@ $ mix deps.get
 
 ## Usage
 
-To generate a SnowflakeId, you can call it as follows:
+To generate a SnowflakeIdx, you can call it as follows:
 
 ```elixir
 iex> machine_id = 10
-iex> {:ok, ref} = SnowflakeId.init(machine_id)
-iex> SnowflakeId.next_id(ref)
-iex> SnowflakeId.extract_id(ref, uid)
+iex> {:ok, ref} = SnowflakeIdx.init(machine_id)
+iex> SnowflakeIdx.next_id(ref)
+iex> SnowflakeIdx.extract_id(ref, uid)
 ```
 
 ## Benchmarks
@@ -78,15 +80,15 @@ Name                             ips        average  deviation         median   
 System.os_time               13.89 M       72.02 ns    ±65.13%      102.40 ns      102.40 ns
 System.monotonic_time        10.34 M       96.68 ns    ±25.08%      102.40 ns      102.40 ns
 System.system_time            9.91 M      100.91 ns    ±16.50%      102.40 ns      102.40 ns
-SnowflakeId.extract_id        8.49 M      117.77 ns    ±31.17%      102.40 ns      204.80 ns
-SnowflakeId.next_id           2.44 M      409.98 ns   ±122.80%           0 ns        1024 ns
+SnowflakeIdx.extract_id        8.49 M      117.77 ns    ±31.17%      102.40 ns      204.80 ns
+SnowflakeIdx.next_id           2.44 M      409.98 ns   ±122.80%           0 ns        1024 ns
 
 Comparison:
 System.os_time               13.89 M
 System.monotonic_time        10.34 M - 1.34x slower +24.66 ns
 System.system_time            9.91 M - 1.40x slower +28.89 ns
-SnowflakeId.extract_id        8.49 M - 1.64x slower +45.75 ns
-SnowflakeId.next_id           2.44 M - 5.69x slower +337.97 ns
+SnowflakeIdx.extract_id        8.49 M - 1.64x slower +45.75 ns
+SnowflakeIdx.next_id           2.44 M - 5.69x slower +337.97 ns
 ```
 
 ### parallel: 2
@@ -109,8 +111,8 @@ parallel: 2
 inputs: none specified
 Estimated total run time: 35 s
 
-Benchmarking SnowflakeId.next_id ...
-Benchmarking SnowflakeId.extract_id ...
+Benchmarking SnowflakeIdx.next_id ...
+Benchmarking SnowflakeIdx.extract_id ...
 Benchmarking System.system_time ...
 Benchmarking System.os_time ...
 Benchmarking System.monotonic_time ...
@@ -120,13 +122,13 @@ Name                             ips        average  deviation         median   
 System.os_time               13.88 M       72.02 ns    ±65.57%      102.40 ns      102.40 ns
 System.monotonic_time        10.27 M       97.41 ns    ±25.87%      102.40 ns      102.40 ns
 System.system_time            8.83 M      113.22 ns   ±270.02%           0 ns        1024 ns
-SnowflakeId.extract_id        7.13 M      140.32 ns    ±42.92%      102.40 ns      204.80 ns
-SnowflakeId.next_id           1.37 M      732.27 ns   ±364.74%           0 ns       19456 ns
+SnowflakeIdx.extract_id        7.13 M      140.32 ns    ±42.92%      102.40 ns      204.80 ns
+SnowflakeIdx.next_id           1.37 M      732.27 ns   ±364.74%           0 ns       19456 ns
 
 Comparison:
 System.os_time               13.88 M
 System.monotonic_time        10.27 M - 1.35x slower +25.39 ns
 System.system_time            8.83 M - 1.57x slower +41.20 ns
-SnowflakeId.extract_id        7.13 M - 1.95x slower +68.30 ns
-SnowflakeId.next_id           1.37 M - 10.17x slower +660.25 ns
+SnowflakeIdx.extract_id        7.13 M - 1.95x slower +68.30 ns
+SnowflakeIdx.next_id           1.37 M - 10.17x slower +660.25 ns
 ```

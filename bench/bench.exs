@@ -1,13 +1,13 @@
 
-{:ok, ref} = SnowflakeId.init(1)
+{:ok, ref} = SnowflakeIdx.init(1)
 
 [parallel: 1, print: [fast_warning: false]]
 |> Benchee.init()
 |> Benchee.system()
 |> Benchee.benchmark(
-  "SnowflakeId.next_id", fn -> SnowflakeId.next_id(ref) end)
+  "SnowflakeIdx.next_id", fn -> SnowflakeIdx.next_id(ref) end)
 |> Benchee.benchmark(
-  "SnowflakeId.extract_id", fn -> SnowflakeId.extract_id(ref, 18046409646354432) end)
+  "SnowflakeIdx.extract_id", fn -> SnowflakeIdx.extract_id(ref, 18046409646354432) end)
 |> Benchee.benchmark(
   "System.system_time", fn -> System.system_time(:millisecond) end)
 |> Benchee.benchmark(

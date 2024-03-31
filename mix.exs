@@ -1,17 +1,17 @@
-defmodule SnowflakeId.MixProject do
+defmodule SnowflakeIdx.MixProject do
   use Mix.Project
 
   def project do
     [
-      app: :snowflake_id,
-      version: "1.0.0",
+      app: :snowflake_idx,
+      version: "1.0.1",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       description: description(),
       package: package(),
       deps: deps(),
-      name: "snowflake_id",
-      source_url: "https://github.com/kminwoog/snowflake_id"
+      name: "snowflake_idx",
+      source_url: "https://github.com/kminwoog/snowflake_idx"
     ]
   end
 
@@ -34,18 +34,18 @@ defmodule SnowflakeId.MixProject do
   end
 
   defp description() do
-    "Fast snowflake id generator."
+    "A rapid, easy to use Snowflake ID Generator."
   end
 
   defp package() do
     [
       # This option is only needed when you don't want to use the OTP application name
-      name: "snowflake_id",
+      name: "snowflake_idx",
       # These are the default files included in the package
       files: ["lib", "test", "config", "mix.exs", "README*", "LICENSE*"],
       maintainers: ["kim min woog"],
       licenses: ["MIT"],
-      links: %{"GitHub" => "https://github.com/kminwoog/snowflake_id"}
+      links: %{"GitHub" => "https://github.com/kminwoog/snowflake_idx"}
     ]
   end
 end

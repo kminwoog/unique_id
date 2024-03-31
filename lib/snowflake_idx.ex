@@ -1,10 +1,10 @@
-defmodule SnowflakeId do
+defmodule SnowflakeIdx do
   @moduledoc """
   fast snowflake id generator
   """
 
   # default bits range
-  # snowflake_id = | machine_id | timestamp | seq  |
+  # snowflake_idx = | machine_id | timestamp | seq  |
   # (64)         = | (10)       | (42)      | (12) |
 
   import Bitwise
