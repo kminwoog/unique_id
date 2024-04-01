@@ -58,6 +58,15 @@ iex> seq_bits = 11
 iex> {:ok, ref} = UniqueID.new(machine_id, timestamp_bits, seq_bits)
 iex> UniqueID.next_id(ref)
 ```
+
+If use new_with_name/4, UniqueID intialized under its name,
+
+which can then be used instead of the reference in subsequent operations
+
+```elixir
+iex> machine_id = 111
+iex> {:ok, _ref} = UniqueID.new_with_name(:uid_test_name, machine_id)
+iex> UniqueID.next_id(:uid_test_name)
 ```
 
 ## Benchmarks
