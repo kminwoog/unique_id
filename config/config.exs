@@ -10,11 +10,11 @@ import Config
 
 # You can configure your application as:
 #
-#     config :snowflake_idx, key: :value
+#     config :unique_id, key: :value
 #
 # and access this configuration in your application as:
 #
-#     Application.get_env(:snowflake_idx, :key)
+#     Application.get_env(:unique_id, :key)
 #
 # You can also configure a 3rd-party app:
 #

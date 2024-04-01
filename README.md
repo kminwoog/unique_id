@@ -1,18 +1,18 @@
-# SnowflakeIdx
+# UniqueID
 
-[![Hex.pm Version](http://img.shields.io/hexpm/v/snowflake_idx.svg)](https://hex.pm/packages/snowflake_idx) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/snowflake_idx/)
+[![Hex.pm Version](http://img.shields.io/hexpm/v/unique_id.svg)](https://hex.pm/packages/unique_id) [![Hex Docs](https://img.shields.io/badge/hex-docs-brightgreen.svg)](https://hexdocs.pm/unique_id/)
 
-SnowflakeIdx aims to provide atomicity even when called by multiple processes, while ensuring reasonably fast performance.
+UniqueID aims to provide atomicity even when called by multiple processes, while ensuring reasonably fast performance.
 
 It is designed to be called without worrying about overload in performance-critical systems.
 
 To achieve this, it utilizes erlang's atomics to ensure fast performance.
 
-By default, Snowflake ID is an unsigned 64-bit integer and has the following structure:
+By default, UniqueID is an unsigned 64-bit integer and composed of
 
 ```elixir
-  # snowflake_idx = | machine_id | timestamp | seq  |
-  # (64)          = | (10)       | (42)      | (12) |
+  # unique_id = | machine_id | timestamp | seq  |
+  # (64)      = | (10)       | (42)      | (12) |
 ```
 
 
@@ -20,17 +20,17 @@ By default, Snowflake ID is an unsigned 64-bit integer and has the following str
 
 In extreme scenarios where too many IDs are issued by multiple processes within 1 millisecond,
 
-a Process.sleep(1) call is made to ensure atomicity. This can result in a degradation of throughput.
+a Process.sleep(1) call is made to ensure atomicity. which may lead to a throughput degradation.
 
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `snowflake_idx` to your list of dependencies in `mix.exs`:
+by adding `unique_id` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:snowflake_idx, "~> 1.0"}
+    {:unique_id, "~> 1.1"}
   ]
 end
 ```
@@ -41,13 +41,23 @@ $ mix deps.get
 
 ## Usage
 
-To generate a SnowflakeIdx, you can call it as follows:
+To generate a unique id (aka UniqueID), you can call it as follows:
 
 ```elixir
-iex> machine_id = 10
-iex> {:ok, ref} = SnowflakeIdx.init(machine_id)
-iex> SnowflakeIdx.next_id(ref)
-iex> SnowflakeIdx.extract_id(ref, uid)
+iex> machine_id = 111
+iex> {:ok, ref} = UniqueID.new(machine_id)
+iex> UniqueID.next_id(ref)
+```
+
+To change bit range of UniqueID
+
+```elixir
+iex> machine_id = 111
+iex> timestamp_bits = 43
+iex> seq_bits = 11
+iex> {:ok, ref} = UniqueID.new(machine_id, timestamp_bits, seq_bits)
+iex> UniqueID.next_id(ref)
+```
 ```
 
 ## Benchmarks
@@ -80,15 +90,15 @@ Name                             ips        average  deviation         median   
 System.os_time               13.89 M       72.02 ns    ±65.13%      102.40 ns      102.40 ns
 System.monotonic_time        10.34 M       96.68 ns    ±25.08%      102.40 ns      102.40 ns
 System.system_time            9.91 M      100.91 ns    ±16.50%      102.40 ns      102.40 ns
-SnowflakeIdx.extract_id        8.49 M      117.77 ns    ±31.17%      102.40 ns      204.80 ns
-SnowflakeIdx.next_id           2.44 M      409.98 ns   ±122.80%           0 ns        1024 ns
+UniqueID.extract_id           8.49 M      117.77 ns    ±31.17%      102.40 ns      204.80 ns
+UniqueID.next_id              2.44 M      409.98 ns   ±122.80%           0 ns        1024 ns
 
 Comparison:
 System.os_time               13.89 M
 System.monotonic_time        10.34 M - 1.34x slower +24.66 ns
 System.system_time            9.91 M - 1.40x slower +28.89 ns
-SnowflakeIdx.extract_id        8.49 M - 1.64x slower +45.75 ns
-SnowflakeIdx.next_id           2.44 M - 5.69x slower +337.97 ns
+UniqueID.extract_id           8.49 M - 1.64x slower +45.75 ns
+UniqueID.next_id              2.44 M - 5.69x slower +337.97 ns
 ```
 
 ### parallel: 2
@@ -111,8 +121,8 @@ parallel: 2
 inputs: none specified
 Estimated total run time: 35 s
 
-Benchmarking SnowflakeIdx.next_id ...
-Benchmarking SnowflakeIdx.extract_id ...
+Benchmarking UniqueID.next_id ...
+Benchmarking UniqueID.extract_id ...
 Benchmarking System.system_time ...
 Benchmarking System.os_time ...
 Benchmarking System.monotonic_time ...
@@ -122,13 +132,13 @@ Name                             ips        average  deviation         median   
 System.os_time               13.88 M       72.02 ns    ±65.57%      102.40 ns      102.40 ns
 System.monotonic_time        10.27 M       97.41 ns    ±25.87%      102.40 ns      102.40 ns
 System.system_time            8.83 M      113.22 ns   ±270.02%           0 ns        1024 ns
-SnowflakeIdx.extract_id        7.13 M      140.32 ns    ±42.92%      102.40 ns      204.80 ns
-SnowflakeIdx.next_id           1.37 M      732.27 ns   ±364.74%           0 ns       19456 ns
+UniqueID.extract_id           7.13 M      140.32 ns    ±42.92%      102.40 ns      204.80 ns
+UniqueID.next_id              1.37 M      732.27 ns   ±364.74%           0 ns       19456 ns
 
 Comparison:
 System.os_time               13.88 M
 System.monotonic_time        10.27 M - 1.35x slower +25.39 ns
 System.system_time            8.83 M - 1.57x slower +41.20 ns
-SnowflakeIdx.extract_id        7.13 M - 1.95x slower +68.30 ns
-SnowflakeIdx.next_id           1.37 M - 10.17x slower +660.25 ns
+UniqueID.extract_id           7.13 M - 1.95x slower +68.30 ns
+UniqueID.next_id              1.37 M - 10.17x slower +660.25 ns
 ```

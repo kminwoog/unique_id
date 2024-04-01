@@ -1,15 +1,15 @@
-defmodule SnowflakeIdx do
+defmodule UniqueID do
   @moduledoc """
-  fast snowflake id generator
+  A fast 64 bit unique id generator
   """
 
   # default bits range
-  # snowflake_idx = | machine_id | timestamp | seq  |
-  # (64)         = | (10)       | (42)      | (12) |
+  # id   = | machine_id | timestamp | seq  |
+  # (64) = | (10)       | (42)      | (12) |
 
   import Bitwise
 
-  # 2024-01-01 00:00:00 에 해당하는 unix_time(milliseconds)
+  # unix_time(milliseconds) for 2024-01-01 00:00:00
   @epoch_shift :erlang.universaltime_to_posixtime({{2024, 1, 1}, {0, 0, 0}}) * 1000
 
   @uid_bits 64
@@ -25,11 +25,9 @@ defmodule SnowflakeIdx do
   @type timestamp_value :: non_neg_integer()
   @type seq_value :: non_neg_integer()
 
-  @spec init(machine_id_value(), non_neg_integer(), non_neg_integer(), non_neg_integer()) ::
+  @spec new(machine_id_value(), non_neg_integer(), non_neg_integer(), non_neg_integer()) ::
           {:ok, ref()} | :error_invalid_bits | :error_exceed_machine_id_bits
-  @spec init(non_neg_integer()) ::
-          :error_exceed_machine_id_bits | :error_invalid_bits | {:ok, :atomics.atomics_ref()}
-  def init(
+  def new(
         machine_id,
         machine_id_bits \\ @machine_id_bits,
         timestamp_bits \\ @timestamp_bits,
@@ -105,12 +103,6 @@ defmodule SnowflakeIdx do
     end
   end
 
-  @doc false
-  @spec now_timestamp() :: timestamp_value()
-  defp now_timestamp() do
-    System.system_time(:millisecond) - @epoch_shift
-  end
-
   @spec extract_id(ref(), uid_value()) :: {machine_id_value(), timestamp_value(), seq_value()}
   def extract_id(ref, uid) do
     {machine_id, machine_id_bits, timestamp_bits, seq_bits} = get_bits(ref)
@@ -120,6 +112,12 @@ defmodule SnowflakeIdx do
       seq::unsigned-integer-size(seq_bits)>> = <<uid::unsigned-integer-size(@uid_bits)>>
 
     {machine_id, timestamp, seq}
+  end
+
+  @doc false
+  @spec now_timestamp() :: timestamp_value()
+  defp now_timestamp() do
+    System.system_time(:millisecond) - @epoch_shift
   end
 
   @doc false
