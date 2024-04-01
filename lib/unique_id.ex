@@ -7,7 +7,16 @@ defmodule UniqueID do
   # id   = | machine_id | timestamp | seq  |
   # (64) = | (10)       | (42)      | (12) |
 
+  use Supervisor
   import Bitwise
+
+  def start_link(args) do
+    Supervisor.start_link(__MODULE__, args, name: __MODULE__)
+  end
+
+  def init(_) do
+    Supervisor.init([UniqueID.Process], strategy: :one_for_one)
+  end
 
   # unix_time(milliseconds) for 2024-01-01 00:00:00
   @epoch_shift :erlang.universaltime_to_posixtime({{2024, 1, 1}, {0, 0, 0}}) * 1000
@@ -126,8 +135,8 @@ defmodule UniqueID do
   defp get_bits(ref) do
     bits = :atomics.get(ref, 2)
 
-    <<machine_id::size(40), machine_id_bits::size(8), timestamp_bits::size(8), seq_bits::size(8)>> =
-      <<bits::size(64)>>
+    <<machine_id::size(@max_machine_id_bits), machine_id_bits::size(8), timestamp_bits::size(8),
+      seq_bits::size(8)>> = <<bits::size(64)>>
 
     {machine_id, machine_id_bits, timestamp_bits, seq_bits}
   end
@@ -142,10 +151,14 @@ defmodule UniqueID do
         ) :: :ok
   defp put_bits(ref, machine_id, machine_id_bits, timestamp_bits, seq_bits) do
     <<bits::size(64)>> =
-      <<machine_id::size(40), machine_id_bits::size(8), timestamp_bits::size(8),
+      <<machine_id::size(@max_machine_id_bits), machine_id_bits::size(8), timestamp_bits::size(8),
         seq_bits::size(8)>>
 
     :atomics.put(ref, 2, bits)
     :ok
   end
+
+  # @doc false
+  # @spec get_ref(String.t()) :: ref() | nil
+  # defp get_ref(name), do: :persistent_term.get(name, nil)
 end
