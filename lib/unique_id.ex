@@ -35,8 +35,9 @@ defmodule UniqueID do
   @type machine_id_value :: non_neg_integer()
   @type timestamp_value :: non_neg_integer()
   @type seq_value :: non_neg_integer()
+  @type name :: atom()
 
-  @spec new_with_name(String.t(), machine_id_value(), non_neg_integer(), non_neg_integer()) ::
+  @spec new_with_name(name(), machine_id_value(), non_neg_integer(), non_neg_integer()) ::
           {:ok, ref()} | :error_exceed_machine_id_bits | :error_overflow_machine_id
   def new_with_name(name, machine_id, timestamp_bits \\ @timestamp_bits, seq_bits \\ @seq_bits) do
     if ref = :persistent_term.get(name, nil) do
@@ -78,7 +79,7 @@ defmodule UniqueID do
   end
 
   @doc "next_id operation guarantee atomicity"
-  @spec next_id(ref() | String.t() | nil) :: uid_value()
+  @spec next_id(ref() | name() | nil) :: uid_value()
   def next_id(ref) when is_reference(ref) do
     {machine_id, machine_id_bits, timestamp_bits, seq_bits} = get_bits(ref)
 
@@ -125,7 +126,7 @@ defmodule UniqueID do
     end
   end
 
-  @spec extract_id(ref() | String.t() | nil, uid_value()) ::
+  @spec extract_id(ref() | name() | nil, uid_value()) ::
           {machine_id_value(), timestamp_value(), seq_value()}
   def extract_id(ref, uid) when is_reference(ref) do
     {machine_id, machine_id_bits, timestamp_bits, seq_bits} = get_bits(ref)
@@ -176,6 +177,6 @@ defmodule UniqueID do
   end
 
   @doc false
-  @spec get_ref(String.t()) :: ref() | nil
+  @spec get_ref(name()) :: ref() | nil
   defp get_ref(name), do: :persistent_term.get(name, nil)
 end
