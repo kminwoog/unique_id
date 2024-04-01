@@ -1,4 +1,7 @@
 defmodule UniqueID.Process do
+  @moduledoc """
+  Internal use in UniqueID
+  """
   use GenServer
 
   def start_link(args), do: GenServer.start_link(__MODULE__, args, name: __MODULE__)

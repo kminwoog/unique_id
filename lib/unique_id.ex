@@ -10,10 +10,12 @@ defmodule UniqueID do
   use Supervisor
   import Bitwise
 
+  @doc false
   def start_link(args) do
     Supervisor.start_link(__MODULE__, args, name: __MODULE__)
   end
 
+  @doc false
   def init(_) do
     Supervisor.init([UniqueID.Process], strategy: :one_for_one)
   end
