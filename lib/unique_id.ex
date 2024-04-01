@@ -34,23 +34,31 @@ defmodule UniqueID do
   @type timestamp_value :: non_neg_integer()
   @type seq_value :: non_neg_integer()
 
-  @spec new(machine_id_value(), non_neg_integer(), non_neg_integer(), non_neg_integer()) ::
-          {:ok, ref()} | :error_invalid_bits | :error_exceed_machine_id_bits
-  def new(
-        machine_id,
-        machine_id_bits \\ @machine_id_bits,
-        timestamp_bits \\ @timestamp_bits,
-        seq_bits \\ @seq_bits
-      ) do
+  @spec new_with_name(String.t(), machine_id_value(), non_neg_integer(), non_neg_integer()) ::
+          {:ok, ref()} | :error_exceed_machine_id_bits | :error_overflow_machine_id
+  def new_with_name(name, machine_id, timestamp_bits \\ @timestamp_bits, seq_bits \\ @seq_bits) do
+    if ref = :persistent_term.get(name, nil) do
+      {:ok, ref}
+    else
+      GenServer.call(
+        UniqueID.Process,
+        {:new_with_name, name, machine_id, timestamp_bits, seq_bits},
+        :infinity
+      )
+    end
+  end
+
+  @spec new(machine_id_value(), non_neg_integer(), non_neg_integer()) ::
+          {:ok, ref()} | :error_overflow_machine_id | :error_exceed_machine_id_bits
+  def new(machine_id, timestamp_bits \\ @timestamp_bits, seq_bits \\ @seq_bits) do
+    machine_id_bits = @uid_bits - (timestamp_bits + seq_bits)
+
     cond do
-      machine_id_bits >= @max_machine_id_bits ->
+      machine_id_bits <= 0 or machine_id_bits >= @max_machine_id_bits ->
         :error_exceed_machine_id_bits
 
       machine_id > (1 <<< machine_id_bits) - 1 ->
-        :error_exceed_machine_id_bits
-
-      machine_id_bits + timestamp_bits + seq_bits != @uid_bits ->
-        :error_invalid_bits
+        :error_overflow_machine_id
 
       true ->
         ref = :atomics.new(2, signed: false)
@@ -68,8 +76,8 @@ defmodule UniqueID do
   end
 
   @doc "next_id operation guarantee atomicity"
-  @spec next_id(ref()) :: uid_value()
-  def next_id(ref) do
+  @spec next_id(ref() | String.t() | nil) :: uid_value()
+  def next_id(ref) when is_reference(ref) do
     {machine_id, machine_id_bits, timestamp_bits, seq_bits} = get_bits(ref)
 
     timestamp_n_seq = next_timestamp_n_seq(ref, timestamp_bits, seq_bits)
@@ -80,6 +88,9 @@ defmodule UniqueID do
 
     uid
   end
+
+  def next_id(nil), do: 0
+  def next_id(name), do: next_id(get_ref(name))
 
   @doc false
   @spec next_timestamp_n_seq(ref, non_neg_integer(), non_neg_integer()) :: non_neg_integer()
@@ -112,8 +123,9 @@ defmodule UniqueID do
     end
   end
 
-  @spec extract_id(ref(), uid_value()) :: {machine_id_value(), timestamp_value(), seq_value()}
-  def extract_id(ref, uid) do
+  @spec extract_id(ref() | String.t() | nil, uid_value()) ::
+          {machine_id_value(), timestamp_value(), seq_value()}
+  def extract_id(ref, uid) when is_reference(ref) do
     {machine_id, machine_id_bits, timestamp_bits, seq_bits} = get_bits(ref)
 
     <<^machine_id::unsigned-integer-size(machine_id_bits),
@@ -122,6 +134,9 @@ defmodule UniqueID do
 
     {machine_id, timestamp, seq}
   end
+
+  def extract_id(nil, _uid), do: {0, 0, 0}
+  def extract_id(name, uid), do: extract_id(get_ref(name), uid)
 
   @doc false
   @spec now_timestamp() :: timestamp_value()
@@ -158,7 +173,7 @@ defmodule UniqueID do
     :ok
   end
 
-  # @doc false
-  # @spec get_ref(String.t()) :: ref() | nil
-  # defp get_ref(name), do: :persistent_term.get(name, nil)
+  @doc false
+  @spec get_ref(String.t()) :: ref() | nil
+  defp get_ref(name), do: :persistent_term.get(name, nil)
 end

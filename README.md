@@ -64,6 +64,7 @@ If use new_with_name/4, UniqueID intialized under its name,
 which can then be used instead of the reference in subsequent operations
 
 ```elixir
+iex> UniqueID.start_link([])
 iex> machine_id = 111
 iex> {:ok, _ref} = UniqueID.new_with_name(:uid_test_name, machine_id)
 iex> UniqueID.next_id(:uid_test_name)
@@ -93,21 +94,22 @@ memory time: 0 ns
 reduction time: 0 ns
 parallel: 1
 inputs: none specified
-Estimated total run time: 35 s
+Estimated total run time: 21 s
 
-Name                             ips        average  deviation         median         99th %
-System.os_time               13.89 M       72.02 ns    ±65.13%      102.40 ns      102.40 ns
-System.monotonic_time        10.34 M       96.68 ns    ±25.08%      102.40 ns      102.40 ns
-System.system_time            9.91 M      100.91 ns    ±16.50%      102.40 ns      102.40 ns
-UniqueID.extract_id           8.49 M      117.77 ns    ±31.17%      102.40 ns      204.80 ns
-UniqueID.next_id              2.44 M      409.98 ns   ±122.80%           0 ns        1024 ns
+Benchmarking UniqueID.next_id ...
+Benchmarking UniqueID.next_id with name ...
+Benchmarking UniqueID.extract_id ...
+Calculating statistics...
+
+Name                                 ips        average  deviation         median         99th %
+UniqueID.extract_id               7.99 M      125.22 ns    ±34.17%      102.40 ns      204.80 ns
+UniqueID.next_id                  2.63 M      380.82 ns    ±12.43%      409.60 ns      409.60 ns
+UniqueID.next_id with name        2.50 M      400.38 ns     ±8.02%      409.60 ns      409.60 ns
 
 Comparison:
-System.os_time               13.89 M
-System.monotonic_time        10.34 M - 1.34x slower +24.66 ns
-System.system_time            9.91 M - 1.40x slower +28.89 ns
-UniqueID.extract_id           8.49 M - 1.64x slower +45.75 ns
-UniqueID.next_id              2.44 M - 5.69x slower +337.97 ns
+UniqueID.extract_id               7.99 M
+UniqueID.next_id                  2.63 M - 3.04x slower +255.60 ns
+UniqueID.next_id with name        2.50 M - 3.20x slower +275.16 ns
 ```
 
 ### parallel: 2
@@ -128,26 +130,20 @@ memory time: 0 ns
 reduction time: 0 ns
 parallel: 2
 inputs: none specified
-Estimated total run time: 35 s
+Estimated total run time: 21 s
 
 Benchmarking UniqueID.next_id ...
+Benchmarking UniqueID.next_id with name ...
 Benchmarking UniqueID.extract_id ...
-Benchmarking System.system_time ...
-Benchmarking System.os_time ...
-Benchmarking System.monotonic_time ...
 Calculating statistics...
 
-Name                             ips        average  deviation         median         99th %
-System.os_time               13.88 M       72.02 ns    ±65.57%      102.40 ns      102.40 ns
-System.monotonic_time        10.27 M       97.41 ns    ±25.87%      102.40 ns      102.40 ns
-System.system_time            8.83 M      113.22 ns   ±270.02%           0 ns        1024 ns
-UniqueID.extract_id           7.13 M      140.32 ns    ±42.92%      102.40 ns      204.80 ns
-UniqueID.next_id              1.37 M      732.27 ns   ±364.74%           0 ns       19456 ns
+Name                                 ips        average  deviation         median         99th %
+UniqueID.extract_id               6.87 M      145.67 ns    ±35.29%      102.40 ns      204.80 ns
+UniqueID.next_id                  1.30 M      767.90 ns  ±2019.50%      409.60 ns     1934.34 ns
+UniqueID.next_id with name        1.06 M      940.92 ns  ±2069.48%           0 ns       19456 ns
 
 Comparison:
-System.os_time               13.88 M
-System.monotonic_time        10.27 M - 1.35x slower +25.39 ns
-System.system_time            8.83 M - 1.57x slower +41.20 ns
-UniqueID.extract_id           7.13 M - 1.95x slower +68.30 ns
-UniqueID.next_id              1.37 M - 10.17x slower +660.25 ns
+UniqueID.extract_id               6.87 M
+UniqueID.next_id                  1.30 M - 5.27x slower +622.23 ns
+UniqueID.next_id with name        1.06 M - 6.46x slower +795.26 ns
 ```
