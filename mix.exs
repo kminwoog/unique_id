@@ -4,7 +4,7 @@ defmodule UniqueID.MixProject do
   def project do
     [
       app: :unique_id,
-      version: "1.1.0",
+      version: "1.1.1",
       elixir: "~> 1.14",
       start_permanent: Mix.env() == :prod,
       description: description(),
@@ -43,7 +43,7 @@ defmodule UniqueID.MixProject do
       name: "unique_id",
       # These are the default files included in the package
       files: ["lib", "test", "config", "mix.exs", "README*", "LICENSE*"],
-      maintainers: ["kim min woog"],
+      maintainers: ["taiyo"],
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/kminwoog/unique_id"}
     ]

@@ -4,8 +4,8 @@ defmodule UniqueID do
   """
 
   # default bits range
-  # id   = | machine_id | timestamp | seq  |
-  # (64) = | (10)       | (42)      | (12) |
+  # id   = | sign | machine_id | timestamp | seq  |
+  # (64) = | (1)  | (10)       | (41)      | (12) |
 
   use Supervisor
   import Bitwise
@@ -24,13 +24,14 @@ defmodule UniqueID do
   @epoch_shift :erlang.universaltime_to_posixtime({{2024, 1, 1}, {0, 0, 0}}) * 1000
 
   @uid_bits 64
+  @sign_bits 1
   @machine_id_bits 10
-  @timestamp_bits 42
+  @timestamp_bits 41
   @seq_bits 12
-  @uid_bits @machine_id_bits + @timestamp_bits + @seq_bits
+  @uid_bits @sign_bits + @machine_id_bits + @timestamp_bits + @seq_bits
   @max_machine_id_bits 40
 
-  @type ref :: :atomics.atomics_ref()
+  @type ref :: :atomics.atomics_ref() | reference()
   @type uid_value :: non_neg_integer()
   @type machine_id_value :: non_neg_integer()
   @type timestamp_value :: non_neg_integer()
@@ -54,7 +55,7 @@ defmodule UniqueID do
   @spec new(machine_id_value(), non_neg_integer(), non_neg_integer()) ::
           {:ok, ref()} | :error_overflow_machine_id | :error_exceed_machine_id_bits
   def new(machine_id, timestamp_bits \\ @timestamp_bits, seq_bits \\ @seq_bits) do
-    machine_id_bits = @uid_bits - (timestamp_bits + seq_bits)
+    machine_id_bits = @uid_bits - (@sign_bits + timestamp_bits + seq_bits)
 
     cond do
       machine_id_bits <= 0 or machine_id_bits >= @max_machine_id_bits ->
@@ -86,7 +87,7 @@ defmodule UniqueID do
     timestamp_n_seq = next_timestamp_n_seq(ref, timestamp_bits, seq_bits)
 
     <<uid::unsigned-integer-size(@uid_bits)>> =
-      <<machine_id::unsigned-integer-size(machine_id_bits),
+      <<0::unsigned-integer-size(@sign_bits), machine_id::unsigned-integer-size(machine_id_bits),
         timestamp_n_seq::unsigned-integer-size(timestamp_bits + seq_bits)>>
 
     uid
@@ -96,7 +97,7 @@ defmodule UniqueID do
   def next_id(name), do: next_id(get_ref(name))
 
   @doc false
-  @spec next_timestamp_n_seq(ref, non_neg_integer(), non_neg_integer()) :: non_neg_integer()
+  @spec next_timestamp_n_seq(ref(), non_neg_integer(), non_neg_integer()) :: non_neg_integer()
   defp next_timestamp_n_seq(ref, timestamp_bits, seq_bits) do
     old_id = :atomics.get(ref, 1)
 
@@ -131,7 +132,7 @@ defmodule UniqueID do
   def extract_id(ref, uid) when is_reference(ref) do
     {machine_id, machine_id_bits, timestamp_bits, seq_bits} = get_bits(ref)
 
-    <<^machine_id::unsigned-integer-size(machine_id_bits),
+    <<_::unsigned-integer-size(@sign_bits), ^machine_id::unsigned-integer-size(machine_id_bits),
       timestamp::unsigned-integer-size(timestamp_bits),
       seq::unsigned-integer-size(seq_bits)>> = <<uid::unsigned-integer-size(@uid_bits)>>
 
